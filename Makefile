@@ -4,8 +4,8 @@ black = pdm run black --exclude assets --target-version py39 src tests
 
 .PHONY: install
 install:
-	pdm install --dev
-	pdm run pre-commit install
+	pip install .[dev]
+	# pdm run pre-commit install
 
 .PHONY: update
 update:

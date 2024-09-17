@@ -230,7 +230,8 @@ class SourceCode:  # noqa: R090
         return any(
             [
                 re.match(r".*?# ?fmt:.*?skip.*", line),
-                re.match(r".*?# ?noqa:.*?autoimport.*", line),
+                # re.match(r".*?# ?noqa:.*?autoimport.*", line),
+                re.match(r".*?# ?noqa.*", line),  # ignore all noqa lines, not just # noqa: autoimport
             ]
         )
 

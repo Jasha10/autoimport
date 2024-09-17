@@ -304,9 +304,9 @@ class SourceCode:  # noqa: R090
                 if object_name not in fixed_packages:
                     self._add_package(object_name)
                     fixed_packages.append(object_name)
-            elif isinstance(message, UnusedImport):
-                import_name = message.message_args[0]
-                self._remove_unused_imports(import_name)
+            # elif isinstance(message, UnusedImport):
+            #     import_name = message.message_args[0]
+            #     self._remove_unused_imports(import_name)
 
     def _add_package(self, object_name: str) -> None:
         """Add a package to the source code.
@@ -439,71 +439,71 @@ class SourceCode:  # noqa: R090
 
         return None
 
-    def _remove_unused_imports(self, import_name: str) -> None:
-        """Remove unused import statements.
-
-        Args:
-            import_name: Name of the imported object to remove.
-        """
-        package_name = ".".join(import_name.split(".")[:-1])
-        object_name = import_name.split(".")[-1]
-
-        for line in self.imports:
-            if self._should_ignore_line(line):
-                continue
-
-            # If it's the only line, remove it
-            if re.match(
-                rf"(from {package_name} )?import ({package_name}\.)?{object_name}"
-                rf"( *as [a-z]+)?( *#.*)?$",
-                line,
-            ):
-                self.imports.remove(line)
-                return
-            # If it shares the line with other objects, just remove the unused one.
-            if re.match(rf"from {package_name} import .*?{object_name}", line):
-                # fmt: off
-                # Format is required until there is no more need of the
-                # experimental-string-processing flag of the Black formatter.
-                match = re.match(
-                    fr"(?P<from>from {package_name} import) "
-                    fr"(?P<imports>[^#]*)(?P<comment>#.*)?",
-                    line,
-                )
-                # fmt: on
-                if match is not None:
-                    line_number = self.imports.index(line)
-                    imports = [
-                        import_.strip() for import_ in match["imports"].split(", ")
-                    ]
-                    imports.remove(object_name)
-                    new_imports = ", ".join(imports)
-                    if match["comment"]:
-                        new_imports += f'  {match["comment"]}'
-                    self.imports[line_number] = f"{match['from']} {new_imports}"
-                    return
-            # If it's a multiline import statement
-            elif re.match(
-                rf"from {package_name} import .*?\($",
-                line,
-            ):
-                line_number = self.imports.index(line)
-                # Remove the object name from the multiline imports
-                while line_number + 1 < len(self.imports):
-                    line_number += 1
-                    if re.match(rf"\s*?{object_name},?", self.imports[line_number]):
-                        self.imports.pop(line_number)
-                        break
-
-                # Remove the whole import if there is no other object loaded
-                if (
-                    re.match(r"\s*from .* import", self.imports[line_number - 1])
-                    and self.imports[line_number] == ")"
-                ):
-                    self.imports.pop(line_number)
-                    self.imports.pop(line_number - 1)
-
-                return
+    # def _remove_unused_imports(self, import_name: str) -> None:
+    #     """Remove unused import statements.
+    #
+    #     Args:
+    #         import_name: Name of the imported object to remove.
+    #     """
+    #     package_name = ".".join(import_name.split(".")[:-1])
+    #     object_name = import_name.split(".")[-1]
+    #
+    #     for line in self.imports:
+    #         if self._should_ignore_line(line):
+    #             continue
+    #
+    #         # If it's the only line, remove it
+    #         if re.match(
+    #             rf"(from {package_name} )?import ({package_name}\.)?{object_name}"
+    #             rf"( *as [a-z]+)?( *#.*)?$",
+    #             line,
+    #         ):
+    #             self.imports.remove(line)
+    #             return
+    #         # If it shares the line with other objects, just remove the unused one.
+    #         if re.match(rf"from {package_name} import .*?{object_name}", line):
+    #             # fmt: off
+    #             # Format is required until there is no more need of the
+    #             # experimental-string-processing flag of the Black formatter.
+    #             match = re.match(
+    #                 fr"(?P<from>from {package_name} import) "
+    #                 fr"(?P<imports>[^#]*)(?P<comment>#.*)?",
+    #                 line,
+    #             )
+    #             # fmt: on
+    #             if match is not None:
+    #                 line_number = self.imports.index(line)
+    #                 imports = [
+    #                     import_.strip() for import_ in match["imports"].split(", ")
+    #                 ]
+    #                 imports.remove(object_name)
+    #                 new_imports = ", ".join(imports)
+    #                 if match["comment"]:
+    #                     new_imports += f'  {match["comment"]}'
+    #                 self.imports[line_number] = f"{match['from']} {new_imports}"
+    #                 return
+    #         # If it's a multiline import statement
+    #         elif re.match(
+    #             rf"from {package_name} import .*?\($",
+    #             line,
+    #         ):
+    #             line_number = self.imports.index(line)
+    #             # Remove the object name from the multiline imports
+    #             while line_number + 1 < len(self.imports):
+    #                 line_number += 1
+    #                 if re.match(rf"\s*?{object_name},?", self.imports[line_number]):
+    #                     self.imports.pop(line_number)
+    #                     break
+    #
+    #             # Remove the whole import if there is no other object loaded
+    #             if (
+    #                 re.match(r"\s*from .* import", self.imports[line_number - 1])
+    #                 and self.imports[line_number] == ")"
+    #             ):
+    #                 self.imports.pop(line_number)
+    #                 self.imports.pop(line_number - 1)
+    #
+    #             return
 
 
 def extract_package_objects(name: str) -> Dict[str, str]:

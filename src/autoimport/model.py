@@ -62,8 +62,11 @@ class SourceCode:  # noqa: R090
             * Add missed import statements.
             * Remove unused import statements.
             * Move import statements to the top.
-        """
-        self._move_imports_to_top()
+        """ 
+        import os
+        move_imports_to_top = os.environ.get("DONT_MOVE_IMPORTS_TO_TOP", "") == ""
+        if move_imports_to_top:
+            self._move_imports_to_top()
         self._fix_flake_import_errors()
 
         return self._join_code()
